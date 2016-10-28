@@ -135,6 +135,7 @@ process.ResolvedAnalysisPlots = cms.EDAnalyzer('RUNAnalysis',
 		jecVersion		= cms.string( options.jecVersion ),
 		isData			= cms.bool( isData ),
 )
+process.ResolvedAnalysisPlotsScouting = process.ResolvedAnalysisPlots.clone( cutHT = cms.double( 650  ) )
 process.ResolvedAnalysisPlotsJESUp = process.ResolvedAnalysisPlots.clone( systematics = cms.string( 'JESUp' ) )
 process.ResolvedAnalysisPlotsJESDown = process.ResolvedAnalysisPlots.clone( systematics = cms.string( 'JESDown' ) )
 process.ResolvedAnalysisPlotsJERUp = process.ResolvedAnalysisPlots.clone( systematics = cms.string( 'JERUp' ) )
@@ -150,6 +151,7 @@ process.BoostedAnalysisPlots = cms.EDAnalyzer('RUNBoostedAnalysis',
 		scale 			= cms.double( SF ),
 )
 
+process.BoostedAnalysisPlotsTau21 = process.BoostedAnalysisPlots.clone( sortInTau21 = cms.bool( True ) )
 process.BoostedAnalysisPlotsJESUp = process.BoostedAnalysisPlots.clone( systematics = cms.string( 'JESUp' ) )
 process.BoostedAnalysisPlotsJESDown = process.BoostedAnalysisPlots.clone( systematics = cms.string( 'JESDown' ) )
 process.BoostedAnalysisPlotsJERUp = process.BoostedAnalysisPlots.clone( systematics = cms.string( 'JERUp' ) )
@@ -232,7 +234,9 @@ elif 'Boosted' in options.version:
 else: 
 	outputNAME = 'FullAnalysis_'
 	process.p += process.ResolvedAnalysisPlots
+	process.p += process.ResolvedAnalysisPlotsScouting 
 	process.p += process.BoostedAnalysisPlots
+	process.p += process.BoostedAnalysisPlotsTau21
 	process.p += process.BoostedAnalysisPlotsPuppi
 	if options.systematics:
 		process.p += process.BoostedAnalysisPlotsJESUp

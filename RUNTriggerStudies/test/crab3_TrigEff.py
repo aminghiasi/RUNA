@@ -10,7 +10,7 @@ from httplib import HTTPException
 
 config = config()
 
-version = 'v04p1'
+version = 'v05'
 
 config.General.requestName = ''
 config.General.workArea = 'crab_projects'
@@ -44,8 +44,8 @@ if __name__ == '__main__':
 
 	Samples = [ 
 			'/JetHT/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
-			#'/SingleMuon/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
-			#'/MET/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
+			'/SingleMuon/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
+			'/MET/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
 			#'/SingleElectron/jkarancs-B2GAnaFW_76X_V1p1_Run2015D-16Dec2015-v1-69b00753dd36562e8813bc06510c861e/USER',
 #			'/VectorDiJet1Jet_M50/algomez-RunIIFall15MiniAODv2-PU25nsData2015v1_B2GAnaFW_v76x_v2p1-6ff2d2372798a32b31bae3809d51b58e/USER',
 #			'/VectorDiJet1Jet_M250/algomez-RunIIFall15MiniAODv2-PU25nsData2015v1_B2GAnaFW_v76x_v2p1-6ff2d2372798a32b31bae3809d51b58e/USER',

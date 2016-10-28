@@ -86,6 +86,9 @@ class RUNBoostedAnalysis : public EDAnalyzer {
       bool bjSample;
       bool isData;
       double scale;
+      double cutBoostedHT;
+      double cutBoostedJetPt;
+      bool sortInTau21;
       string dataPUFile;
       string jecVersion;
       TString systematics;
@@ -265,6 +268,9 @@ RUNBoostedAnalysis::RUNBoostedAnalysis(const ParameterSet& iConfig):
 {
 	consumes<LHERunInfoProduct,edm::InRun> (edm::InputTag("externalLHEProducer"));
 	scale 		= iConfig.getParameter<double>("scale");
+	cutBoostedHT 	= iConfig.getParameter<double>("cutBoostedHT");
+	cutBoostedJetPt	= iConfig.getParameter<double>("cutBoostedJetPt");
+	sortInTau21	= iConfig.getParameter<bool>("sortInTau21");
 	bjSample 	= iConfig.getParameter<bool>("bjSample");
 	isData 		= iConfig.getParameter<bool>("isData");
 	dataPUFile 	= iConfig.getParameter<string>("dataPUFile");
@@ -597,7 +603,7 @@ void RUNBoostedAnalysis::analyze(const Event& iEvent, const EventSetup& iSetup) 
 		} 
 		corrJet = rawJet* ( ( JEC * sysJER ) + sysJEC  );
 
-		if( corrJet.Pt() > 150 && idL ) { 
+		if( corrJet.Pt() > cutBoostedJetPt && idL ) { 
 
 			HT += corrJet.Pt();
 			tmpTriggerMass.push_back( (*jetTrimmedMass)[i] );
@@ -689,13 +695,13 @@ void RUNBoostedAnalysis::analyze(const Event& iEvent, const EventSetup& iSetup) 
 	numPV = *NPV;
 	MET = (*metPt)[0];
 	numJets = numberJets;
-	//sort(JETS.begin(), JETS.end(), [](const JETtype &p1, const JETtype &p2) { return p1.mass > p2.mass; }); 
-	//sort(JETS.begin(), JETS.end(), [](const JETtype &p1, const JETtype &p2) { TLorentzVector tmpP1, tmpP2; tmpP1 = p1.p4; tmpP2 = p2.p4;  return tmpP1.M() > tmpP2.M(); }); 
+	if ( sortInTau21 ) sort(JETS.begin(), JETS.end(), [](const myJet &p1, const myJet &p2) { float jet1tau21 = -999, jet2tau21 = -999; jet1tau21 = (p1.tau2/p1.tau1); jet2tau21 = (p2.tau2/p2.tau1); return jet1tau21 > jet2tau21; }); 
+	//sort(JETS.begin(), JETS.end(), [](const myJet &p1, const myJet &p2) { TLorentzVector tmpP1, tmpP2; tmpP1 = p1.p4; tmpP2 = p2.p4;  return tmpP1.M() > tmpP2.M(); }); 
 	histos1D_[ "jetNum" ]->Fill( numJets, totalWeight );
 	histos1D_[ "NPV_NOPUWeight" ]->Fill( numPV );
 	histos1D_[ "NPV" ]->Fill( numPV, totalWeight );
 	if ( HT > 0 ) histos1D_[ "HT" ]->Fill( HT, totalWeight );
-	if ( HT > 900. ) cutHT = 1;
+	if ( HT > cutBoostedHT ) cutHT = 1;
 
 	sort(tmpTriggerMass.begin(), tmpTriggerMass.end(), [](const float p1, const float p2) { return p1 > p2; }); 
 	if ( ( tmpTriggerMass.size()> 0 ) ) { //&& ( tmpTriggerMass[0] > cutTrimmedMassvalue) ){
@@ -905,7 +911,7 @@ void RUNBoostedAnalysis::analyze(const Event& iEvent, const EventSetup& iSetup) 
 			}
 
 
-			////////// Closure test for Data
+			/*///////// Closure test for Data
 			if ( isData ){
 				if ( ( HT > 600 ) && ( HT < 900 ) ) {
 					if ( ( jet1Tau21 < 0.5 ) && ( jet2Tau21 < 0.5 ) && ( jet1Tau31 < 0.3 ) && ( jet2Tau31 < 0.3 ) ) {
@@ -929,7 +935,7 @@ void RUNBoostedAnalysis::analyze(const Event& iEvent, const EventSetup& iSetup) 
 						}
 					}
 				}
-			}
+			}*/
 			/////////////////////////////////////////////////////////
 			// Cut Pt
 			//if (( JETS[0].p4.Pt() > 500. ) && ( JETS[1].p4.Pt() > 450. ) ) cutJetPt = 1 ;
@@ -1310,6 +1316,7 @@ void RUNBoostedAnalysis::beginJob() {
 	histos1D_[ "numConst_cutEffTrigger" ] = fs_->make< TH1D >( "numConst_cutEffTrigger", "numConst", 100, 0., 100. );
 	histos1D_[ "numConst_cutEffTrigger" ]->Sumw2();
 
+	/*
 	histos1D_[ "prunedMassAve_A" ] = fs_->make< TH1D >( "prunedMassAve_A", "prunedMassAve_A", 600, 0., 600. );
 	histos1D_[ "prunedMassAve_A" ]->Sumw2();
 	histos2D_[ "prunedMassAsymVsdeltaEtaDijet_A" ] = fs_->make< TH2D >( "prunedMassAsymVsdeltaEtaDijet_A", "prunedMassAsymVsdeltaEtaDijet_A", 20, 0., 1., 50, 0., 5. );
@@ -1326,6 +1333,7 @@ void RUNBoostedAnalysis::beginJob() {
 	histos1D_[ "prunedMassAve_D" ]->Sumw2();
 	histos2D_[ "prunedMassAsymVsdeltaEtaDijet_D" ] = fs_->make< TH2D >( "prunedMassAsymVsdeltaEtaDijet_D", "prunedMassAsymVsdeltaEtaDijet_D", 20, 0., 1., 50, 0., 5. );
 	histos2D_[ "prunedMassAsymVsdeltaEtaDijet_D" ]->Sumw2();
+	*/
 
 	cutLabels.push_back("Processed");
 	cutLabels.push_back("Trigger");
@@ -1361,6 +1369,9 @@ void RUNBoostedAnalysis::fillDescriptions(edm::ConfigurationDescriptions & descr
 	desc.add<string>("systematics", "None");
 	desc.add<string>("PUMethod", "chs");
 	desc.add<double>("scale", 1);
+	desc.add<double>("cutBoostedHT", 900);
+	desc.add<double>("cutBoostedJetPt", 150);
+	desc.add<bool>("sortInTau21", false);
 	vector<string> HLTPass;
 	HLTPass.push_back("HLT_AK8PFHT700_TrimR0p1PT0p03Mass50");
 	desc.add<vector<string>>("triggerPass",	HLTPass);
