@@ -132,7 +132,7 @@ process.BoostedTriggerEfficiency = cms.EDAnalyzer('RUNBoostedTriggerEfficiency',
 		cutTau21value 		= cms.double( options.Tau21 ),
 		bjSample		= cms.bool( bjsample ),
 		baseTrigger		= cms.string(basedline),
-		triggerPass		= cms.vstring( ['HLT_AK8PFHT700_TrimR0p1PT0p03Mass50'] ),
+		triggerPass		= cms.vstring( ['HLT_AK8PFHT650_TrimR0p1PT0p03Mass50'] ),
 
 )
 

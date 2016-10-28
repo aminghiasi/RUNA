@@ -27,7 +27,7 @@ boostedMassAveBins = array( 'd', [ 0, 3, 6, 9, 12, 16, 19, 23, 26, 30, 34, 39, 4
 ######################################
 def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 
-	outputFileName = 'Rootfiles/RUNMiniBoostedAnalysis_'+grooming+'_'+signalName+UNC+'_'+RANGE+'_'+args.version+'p6.root' 
+	outputFileName = 'Rootfiles/RUNMiniBoostedAnalysis_'+grooming+'_'+signalName+UNC+'_'+RANGE+'_'+args.version+'p7.root' 
 	outputFile = TFile( outputFileName, 'RECREATE' )
 
 	###################################### output Tree
@@ -177,6 +177,16 @@ def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 						(50 if 'deltaEta' in listCuts[ind[1]][0] else 20 ), 0., (5. if 'deltaEta' in listCuts[ind[1]][0] else 1. ) 
 						)
 				allHistos[ tmpNameSam+'_'+k ].Sumw2()
+
+				allHistos[ "massAve_"+tmpNameSam+'_btag_'+k ] = TH1F( "massAve_"+tmpNameSam+'_btag_'+k, "massAve_"+tmpNameSam+'_btag_'+k, massBins, massXmin, massXmax )
+				allHistos[ "massAve_"+tmpNameSam+'_btag_'+k ].Sumw2()
+				allHistos[ tmpNameSam+'_btag_'+k ] = TH2F( tmpNameSam+'_btag_'+k, tmpNameSam+'_btag_'+k, 
+						#(50 if 'deltaEta' in listCuts[-2][0] else 20 ), 0., (5. if 'deltaEta' in listCuts[-2][0] else 1. ),
+						#(50 if 'deltaEta' in listCuts[-1][0] else 20 ), 0., (5. if 'deltaEta' in listCuts[-1][0] else 1. ) 
+						(50 if 'deltaEta' in listCuts[ind[0]][0] else 20 ), 0., (5. if 'deltaEta' in listCuts[ind[0]][0] else 1. ),
+						(50 if 'deltaEta' in listCuts[ind[1]][0] else 20 ), 0., (5. if 'deltaEta' in listCuts[ind[1]][0] else 1. ) 
+						)
+				allHistos[ tmpNameSam+'_btag_'+k ].Sumw2()
 	#print allHistos
 
 	################################################################################################## Running the Analysis
@@ -294,7 +304,7 @@ def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 				allHistos[ "jet1SubjetPtRatio_"+sam ].Fill( events.jet1SubjetPtRatio, scale )
 				allHistos[ "jet2SubjetPtRatio_"+sam ].Fill( events.jet2SubjetPtRatio, scale )
 				allHistos[ "jet1BtagCSV_"+sam ].Fill( 1 if jet1BtagCSV else 0 )
-				allHistos[ "jet2BtagCSV_"+sam ].Fill( 1 if jet1BtagCSV else 0 )
+				allHistos[ "jet2BtagCSV_"+sam ].Fill( 1 if jet2BtagCSV else 0 )
 
 				bothBtag = ( jet1BtagCSV and jet2BtagCSV )
 				oneBtag = ( jet1BtagCSV or jet2BtagCSV )
@@ -326,7 +336,8 @@ def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 						cutFlowScaledList[ var[0] ] += scale
 						cutFlowScaledList[ var[0] ] += (puWeight*puWeight)
 
-				if oneBtag and all(sigCutsList): 
+				#if oneBtag and all(sigCutsList): 
+				if bothBtag and all(sigCutsList): 
 					allHistos[ 'massAve_btag_'+sample ].Fill( massAve, scale )  ### adding two prong scale factor
 					allHistos[ 'jet1Tau21_btag_'+sample ].Fill( events.jet1Tau21, scale )
 					allHistos[ 'jet2Tau21_btag_'+sample ].Fill( events.jet2Tau21, scale )
@@ -372,6 +383,8 @@ def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 					allHistos[ listCuts[-2][0]+'Vs'+listCuts[-1][0]+'_'+sample+'_Bkg' ].Fill( getattr( events, listCuts[0][0] ), getattr( events, listCuts[1][0] ), scale )
 					plotABCD( [ ( getattr( events, listCuts[-2][0] ) < listCuts[-2][1] ), ( getattr( events, listCuts[-1][0] ) < listCuts[-1][1] ) ], [ listCuts[-2][0], listCuts[-1][0] ], events, massAve, scale, sample )
 
+					if bothBtag: plotABCD( [ ( getattr( events, listCuts[-2][0] ) < listCuts[-2][1] ), ( getattr( events, listCuts[-1][0] ) < listCuts[-1][1] ) ], [ listCuts[-2][0], listCuts[-1][0] ], events, massAve, scale, sample+'_btag' )
+
 				####### bkg estimation alternatives
 				if sigCutsList[2]: 
 					allHistos[ 'jet1Tau21VsdeltaEtaDijet_'+sample+'_Bkg' ].Fill( getattr( events, 'jet1Tau21' ), getattr( events, 'deltaEtaDijet' ), scale )
@@ -379,11 +392,13 @@ def myAnalyzer( dictSamples, listCuts, signalName, RANGE, UNC ):
 					plotABCDv2( [ ( getattr( events, listCuts[0][0] ) < listCuts[0][1] ), ( getattr( events, listCuts[1][0] ) < listCuts[1][1] ), ( getattr( events, listCuts[-1][0] ) < listCuts[-1][1] ) ], [ listCuts[0][0], listCuts[-1][0] ], events, massAve, scale, sample )
 					plotABCDv2( [ ( getattr( events, listCuts[0][0] ) < listCuts[0][1] ), ( getattr( events, listCuts[1][0] ) < listCuts[1][1] ), ( getattr( events, listCuts[-1][0] ) < listCuts[-1][1] ) ], [ listCuts[1][0], listCuts[-1][0] ], events, massAve, scale, sample )
 
+				'''
 				if sigCutsList[-1]: 
 					allHistos[ 'jet1Tau21VsprunedMassAsym_'+sample+'_Bkg' ].Fill( getattr( events, 'jet1Tau21' ), getattr( events, 'prunedMassAsym' ), scale )
 					allHistos[ 'jet2Tau21VsprunedMassAsym_'+sample+'_Bkg' ].Fill( getattr( events, 'jet2Tau21' ), getattr( events, 'prunedMassAsym' ), scale )
 					plotABCDv2( [ ( getattr( events, listCuts[0][0] ) < listCuts[0][1] ), ( getattr( events, listCuts[1][0] ) < listCuts[1][1] ), ( getattr( events, listCuts[-2][0] ) < listCuts[-2][1] ) ], [ listCuts[0][0], listCuts[-2][0] ], events, massAve, scale, sample )
 					plotABCDv2( [ ( getattr( events, listCuts[0][0] ) < listCuts[0][1] ), ( getattr( events, listCuts[1][0] ) < listCuts[1][1] ), ( getattr( events, listCuts[-2][0] ) < listCuts[-2][1] ) ], [ listCuts[1][0], listCuts[-2][0] ], events, massAve, scale, sample )
+				'''
 
 						
 
@@ -503,9 +518,10 @@ if __name__ == '__main__':
 	allSamples[ 'TTJets' ] = folder+'/RUNAnalysis_TTJets_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
 	allSamples[ 'WJetsToQQ' ] = folder+'/RUNAnalysis_WJetsToQQ_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
 	allSamples[ 'ZJetsToQQ' ] = folder+'/RUNAnalysis_ZJetsToQQ_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
-	allSamples[ 'WWTo4Q' ] = folder+'/RUNAnalysis_WWTo4Q_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
-	allSamples[ 'ZZTo4Q' ] = folder+'/RUNAnalysis_ZZTo4Q_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
-	allSamples[ 'WZ' ] = folder+'/RUNAnalysis_WZ_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
+	allSamples[ 'Dibosons' ] = folder+'/RUNAnalysis_Dibosons_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
+	#allSamples[ 'WWTo4Q' ] = folder+'/RUNAnalysis_WWTo4Q_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
+	#allSamples[ 'ZZTo4Q' ] = folder+'/RUNAnalysis_ZZTo4Q_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
+	#allSamples[ 'WZ' ] = folder+'/RUNAnalysis_WZ_RunIIFall15MiniAODv2_v76x_v2p0_'+args.version+'.root'
 
 	cutList = ( 'Dibosons' if 'Dibosons' in mass else 'RPVStopStopToJets_'+args.decay+'_M-'+mass )
 	#try: cuts = selection[ cutList ]

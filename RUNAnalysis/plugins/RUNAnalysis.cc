@@ -91,6 +91,8 @@ class RUNAnalysis : public EDAnalyzer {
       string jecVersion;
       TString systematics;
       double scale;
+      double cutHT;
+      double cut4JetPt;
       double cutMassAsym;
       double cutDelta;
       double cutDEta;
@@ -212,11 +214,13 @@ RUNAnalysis::RUNAnalysis(const ParameterSet& iConfig):
 	consumes<LHERunInfoProduct,edm::InRun> (edm::InputTag("externalLHEProducer"));
 	scale 		= iConfig.getParameter<double>("scale");
 	bjSample 	= iConfig.getParameter<bool>("bjSample");
-	cutMassAsym      = iConfig.getParameter<double>     ("cutMassAsym");
-	cutDelta        = iConfig.getParameter<double>     ("cutDelta");
-	cutDEta      = iConfig.getParameter<double>     ("cutDEta");
-	cutDeltaR 		= iConfig.getParameter<double>("cutDeltaR");
-	cutCosThetaStar 		= iConfig.getParameter<double>("cutCosThetaStar");
+	cutHT 		= iConfig.getParameter<double>("cutHT");
+	cut4JetPt 	= iConfig.getParameter<double>("cut4JetPt");
+	cutMassAsym     = iConfig.getParameter<double>("cutMassAsym");
+	cutDelta        = iConfig.getParameter<double>("cutDelta");
+	cutDEta      	= iConfig.getParameter<double>("cutDEta");
+	cutDeltaR 	= iConfig.getParameter<double>("cutDeltaR");
+	cutCosThetaStar = iConfig.getParameter<double>("cutCosThetaStar");
 	triggerPass 	= iConfig.getParameter<vector<string>>("triggerPass");
 	isData 		= iConfig.getParameter<bool>("isData");
 	dataPUFile 	= iConfig.getParameter<string>("dataPUFile");
@@ -523,7 +527,7 @@ void RUNAnalysis::analyze(const Event& iEvent, const EventSetup& iSetup) {
 			histos1D_[ "MET_cut4Jets" ]->Fill( MET, totalWeight );
 			histos1D_[ "METHT_cut4Jets" ]->Fill( MET/HT, totalWeight );
 
-			if( ( numJets == 4 ) && ( HT > 800. ) && ( JETS[3].p4.Pt() > 80.0 ) ){
+			if( ( numJets == 4 ) && ( HT > cutHT ) && ( JETS[3].p4.Pt() > cut4JetPt ) ){
 				
 				vector<double> tmpDijetR;
 				double dR12 = JETS[0].p4.DeltaR( JETS[1].p4 );
@@ -1021,6 +1025,8 @@ void RUNAnalysis::fillDescriptions(edm::ConfigurationDescriptions & descriptions
 
 	edm::ParameterSetDescription desc;
 
+	desc.add<double>("cutHT", 800);
+	desc.add<double>("cut4JetPt", 80);
 	desc.add<double>("cutMassAsym", 1);
 	desc.add<double>("cutDelta", 1);
 	desc.add<double>("cutDEta", 1);
