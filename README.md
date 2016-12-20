@@ -10,7 +10,7 @@ This package contains scripts:
 cmsrel CMSSW_7_1_25_patch1/
 cd CMSSW_7_1_25_patch1/src/
 cmsenv
-git clone git@github.com:RutgersHEX/RUNA.git -b v7124
+git clone git@github.com:RutgersHEX/RUNA.git -b v7125patch1
 scram b -j 18
 cmsenv
 ```
