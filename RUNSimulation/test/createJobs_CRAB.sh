@@ -21,25 +21,25 @@
 ### PARAMETERS
 #####################################
 
-stop1=${2}	## You can use this parameters later to make everything simpler. 
-coupling=UDD323
-totalNumberEvents=${3}
+totalNumberEvents=${2}
+stop1=${3}		## You can use this parameters later to make everything simpler. 
+coupling=UDD323 	##### UDD312 is for stop to jj, UDD323 for stop to bj
 
-Name=RPVStopStopToJets_${coupling}_M-${stop1}_TuneCUETP8M1_13TeV-madgraph-pythia8       ##### UDD312 is for stop to jj, UDD323 for stop to bj
+Name=RPVStopStopToJets_${coupling}_M-${stop1}_TuneCUETP8M1_13TeV-madgraph-pythia8      
 
 ##### if using lhe modify this line
 LHEFile=/store/user/algomez/lhe/RPVStop100_UDD323_13TeV_200k.lhe			#### DONT USE the entire eos path!!!!!
-
-
 
 #####################################################
 #### Here is where the code starts.. 
 #### Initially you shouldn't modify this part
 #####################################################
+empty=""
+shortName=${Name/_TuneCUETP8M1_13TeV-madgraph-pythia8/$dummy}
 echo " Creating directories..."
 Main_Dir=$PWD 
 ####### Working directory
-Working_Dir=${Main_Dir}/${Name}	
+Working_Dir=${Main_Dir}/${shortName}	
 if [ -d $Working_Dir ]; then
 	rm -rf $Working_Dir
 	mkdir -p $Working_Dir
@@ -54,7 +54,7 @@ cd $Working_Dir/
 ##############################################
 
 echo " Creating python file for GEN-SIM .. "
-step0PythonFile="step0_${Name}_${1}_GEN_SIM.py"
+step0PythonFile="step0_${shortName}_${1}_GEN_SIM.py"
 cp ${Main_Dir}/step0_${1}_GEN_SIM.py  ${step0PythonFile}
 
 ########################################################
@@ -62,9 +62,10 @@ cp ${Main_Dir}/step0_${1}_GEN_SIM.py  ${step0PythonFile}
 ########################################################
 echo " Creating crab files .... "
 
-crabFileStep0=crab3_${Name}_GENSIM_step0.py
+crabFileStep0=crab3_${shortName}_GENSIM_step0.py
 cp ${Main_Dir}/crab3.py  ${crabFileStep0}
 sed -i 's/NAME/'"${Name}"'/' ${crabFileStep0}
+sed -i 's/name/'"${shortName}"'/' ${crabFileStep0}
 sed -i 's/test/'"${step0PythonFile}"'/' ${crabFileStep0}
 
 if [[ ${1} == *'LHE'* ]]; then
@@ -72,11 +73,14 @@ if [[ ${1} == *'LHE'* ]]; then
 	unitPerJob=100
 
 elif [[ ${1} == *'gridpack'* ]]; then
+	sed -i 's/config.JobType.generato/#config.JobType.generator/' ${crabFileStep0}
 	sed -i 's/HadRPVStop180_UDD323_13TeV_tarball/HadRPVStop'"${stop1}"'_'"${coupling}"'_13TeV_tarball/' ${step0PythonFile}
-	unitPerJob=2000
-	dummy=280
 	if [ "$stop1" -gt 280 ]; then
 		sed -i 's/process.generator+process.htFilter/process.generator/' ${step0PythonFile}
+		unitPerJob=1000
+	else
+		unitPerJob=2000
+
 	fi
 fi
 
