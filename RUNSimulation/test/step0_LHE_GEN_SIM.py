@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: Configuration/GenProduction/python/ThirteenTeV/RPVStop_Hadronizer_TuneCUETP8M1_13TeV_MLM_5f_max2j_LHE_pythia8_cff.py --filein file:EXO-RunIIWinter15wmLHE-02176.root --fileout file:EXO-RunIISummer15GS-05066.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions MCRUN2_71_V1::All --beamspot Realistic50ns13TeVCollision --step GEN,SIM --magField 38T_PostLS1 --python_filename /afs/cern.ch/cms/PPD/PdmV/work/McM/submit/EXO-RunIISummer15GS-05066/EXO-RunIISummer15GS-05066_1_cfg.py --no_exec -n 313
+# with command line options: Configuration/GenProduction/python/EXO-RunIISummer15wmLHEGS-03775-fragment.py --fileout file:EXO-RunIISummer15wmLHEGS-03775.root --mc --eventcontent RAWSIM,LHE --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM,LHE --conditions MCRUN2_71_V1::All --beamspot Realistic50ns13TeVCollision --step LHE,GEN,SIM --magField 38T_PostLS1 --python_filename step0_LHE_v7125.py --no_exec -n 2000
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SIM')
@@ -24,17 +24,10 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(313)
+    input = cms.untracked.int32(2000)
 )
 
 # Input source
-#process.source = cms.Source("PoolSource",
-#    secondaryFileNames = cms.untracked.vstring(),
-#    fileNames = cms.untracked.vstring('file:EXO-RunIIWinter15wmLHE-02176.root'),
-#    inputCommands = cms.untracked.vstring('keep *', 
-#        'drop LHEXMLStringProduct_*_*_*'),
-#    dropDescendantsOfDroppedBranches = cms.untracked.bool(False)
-#)
 process.source = cms.Source("LHESource",
     fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/user/algomez/RPVSttojj_13TeV/RPVSt200tojj_13TeV.lhe')
 )
@@ -46,7 +39,7 @@ process.options = cms.untracked.PSet(
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.19 $'),
-    annotation = cms.untracked.string('Configuration/GenProduction/python/ThirteenTeV/RPVStop_Hadronizer_TuneCUETP8M1_13TeV_MLM_5f_max2j_LHE_pythia8_cff.py nevts:313'),
+    annotation = cms.untracked.string('Configuration/GenProduction/python/EXO-RunIISummer15wmLHEGS-03775-fragment.py nevts:2000'),
     name = cms.untracked.string('Applications')
 )
 
@@ -56,7 +49,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:RPVSt200tojj_13TeV_PU20bx25_GEN.root'),
+    fileName = cms.untracked.string('file:EXO-RunIISummer15wmLHEGS-03775.root'),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('GEN-SIM')
@@ -66,12 +59,18 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     )
 )
 
+
 # Additional output definition
 
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_71_V1::All', '')
+
+process.htFilter = cms.EDFilter("PythiaFilterHT",
+    MinHT = cms.untracked.double(500.0)
+)
+
 
 process.generator = cms.EDFilter("Pythia8HadronizerFilter",
     pythiaPylistVerbosity = cms.untracked.int32(1),
@@ -112,6 +111,9 @@ process.generator = cms.EDFilter("Pythia8HadronizerFilter",
 )
 
 
+
+process.ProductionFilterSequence = cms.Sequence(process.generator+process.htFilter)
+
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
 process.simulation_step = cms.Path(process.psim)
@@ -123,7 +125,7 @@ process.RAWSIMoutput_step = cms.EndPath(process.RAWSIMoutput)
 process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.endjob_step,process.RAWSIMoutput_step)
 # filter all path with the production filter sequence
 for path in process.paths:
-	getattr(process,path)._seq = process.generator * getattr(process,path)._seq 
+	getattr(process,path)._seq = process.ProductionFilterSequence * getattr(process,path)._seq 
 
 # customisation of the process.
 

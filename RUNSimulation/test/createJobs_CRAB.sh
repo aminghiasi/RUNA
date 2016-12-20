@@ -22,16 +22,13 @@
 #####################################
 
 stop1=100	## You can use this parameters later to make everything simpler. 
-stop2=250	## You can use this parameters later to make everything simpler. Now I am not using them at all
-
+coupling=UDD323
 totalNumberEvents=100000
 
-Name=RPVStopStopToJets_UDD312_M-${stop1}_TuneCUETP8M1_13TeV-madgraph-pythia8       ##### UDD312 is for stop to jj, UDD323 for stop to bj
-LHEFile=/store/user/algomez/lhe/RPVSt100tobj_13TeV.lhe					#### DONT USE the entire eos path!!!!!
+Name=RPVStopStopToJets_${coupling}_M-${stop1}_TuneCUETP8M1_13TeV-madgraph-pythia8       ##### UDD312 is for stop to jj, UDD323 for stop to bj
 
-PU=( 'Asympt25ns' )									#### You can remove the PU scenario that you are not going to use.
-CRAB3=true
-
+##### if using lhe modify this line
+LHEFile=/store/user/algomez/lhe/RPVStop100_UDD323_13TeV_200k.lhe			#### DONT USE the entire eos path!!!!!
 
 
 
@@ -57,178 +54,59 @@ cd $Working_Dir/
 ##############################################
 
 echo " Creating python file for GEN-SIM .. "
-step0PythonFile="step0_${Name}_LHE_GEN_SIM.py"
-cp ${Main_Dir}/step0_LHE_GEN_SIM.py  ${step0PythonFile}
-
-sed -i 's,/store/user/algomez/RPVSttojj_13TeV/RPVSt200tojj_13TeV.lhe,'"${LHEFile}"',' ${step0PythonFile}
-sed -i 's/RPVSt200tojj_13TeV_PU20bx25_GEN.root/'"${Name}"'_GEN.root/' ${step0PythonFile}
-
-echo " Creating python file for RAWSIM (different PU scenarios).. "
-step1PythonFile="step1_${Name}_DIGI_LI_DIGI2RAW_HLT_"
-cp ${Main_Dir}/step1_DIGI_LI_DIGI2RAW_HLT.py  ${step1PythonFile}'PU20bx25.py'
-cp ${Main_Dir}/step1_DIGI_LI_DIGI2RAW_HLT.py  ${step1PythonFile}'PU40bx25.py'
-cp ${Main_Dir}/step1_DIGI_LI_DIGI2RAW_HLT.py  ${step1PythonFile}'PU40bx50.py'
-
-sed -i 's/inputFile/'"${Name}"'_RAWSIM_PU20bx25/' ${step1PythonFile}'PU20bx25.py'
-sed -i 's/inputFile/'"${Name}"'_RAWSIM_PU40bx25/' ${step1PythonFile}'PU40bx25.py'
-sed -i 's/process.mix.input.nbPileupEvents.averageNumber = cms.double(20.000000)/process.mix.input.nbPileupEvents.averageNumber = cms.double(40.000000)/' ${step1PythonFile}'PU40bx25.py'
-sed -i 's/inputFile/'"${Name}"'_RAWSIM_PU40bx50/' ${step1PythonFile}'PU40bx50.py'
-sed -i 's/process.mix.bunchspace = cms.int32(25)/process.mix.bunchspace = cms.int32(50)/' ${step1PythonFile}'PU40bx50.py'
-sed -i 's/process.mix.input.nbPileupEvents.averageNumber = cms.double(20.000000)/process.mix.input.nbPileupEvents.averageNumber = cms.double(40.000000)/' ${step1PythonFile}'PU40bx50.py'
-sed -i 's/PHYS14_25_V2/PHYS14_50_V2/' ${step1PythonFile}'PU40bx50.py'
-
-echo " Creating python file for AODSIM (different PU scenarios).. "
-step2PythonFile="step2_${Name}_RAW2DIGI_L1Reco_RECO_"
-cp ${Main_Dir}/step2_RAW2DIGI_L1Reco_RECO.py  ${step2PythonFile}'PU20bx25.py'
-cp ${Main_Dir}/step2_RAW2DIGI_L1Reco_RECO.py  ${step2PythonFile}'PU40bx25.py'
-cp ${Main_Dir}/step2_RAW2DIGI_L1Reco_RECO.py  ${step2PythonFile}'PU40bx50.py'
-sed -i 's/inputFile/'"${Name}"'_AODSIM_PU20bx25/' ${step2PythonFile}'PU20bx25.py'
-sed -i 's/inputFile/'"${Name}"'_AODSIM_PU40bx25/' ${step2PythonFile}'PU40bx25.py'
-sed -i 's/inputFile/'"${Name}"'_AODSIM_PU40bx50/' ${step2PythonFile}'PU40bx50.py'
-sed -i 's/PHYS14_25_V2/PHYS14_50_V2/' ${step2PythonFile}'PU40bx50.py'
-
-echo " Creating python file for MiniAOD (different PU scenarios).. "
-step3PythonFile="step3_${Name}_MiniAOD_"
-cp ${Main_Dir}/step3_MiniAOD.py  ${step3PythonFile}'PU20bx25.py'
-cp ${Main_Dir}/step3_MiniAOD.py  ${step3PythonFile}'PU40bx25.py'
-cp ${Main_Dir}/step3_MiniAOD.py  ${step3PythonFile}'PU40bx50.py'
-sed -i 's/inputFile/'"${Name}"'_MiniAOD_PU20bx25/' ${step3PythonFile}'PU20bx25.py'
-sed -i 's/inputFile/'"${Name}"'_MiniAOD_PU40bx25/' ${step3PythonFile}'PU40bx25.py'
-sed -i 's/inputFile/'"${Name}"'_MiniAOD_PU40bx50/' ${step3PythonFile}'PU40bx50.py'
-sed -i 's/PHYS14_25_V2/PHYS14_50_V2/' ${step3PythonFile}'PU40bx50.py'
+step0PythonFile="step0_${Name}_${1}_GEN_SIM.py"
+cp ${Main_Dir}/step0_${1}_GEN_SIM.py  ${step0PythonFile}
 
 ########################################################
 ######### Small file with the commands for condor
 ########################################################
 echo " Creating crab files .... "
-if ${CRAB3}; then
 
-	crabFileStep0=crab3_${Name}_GENSIM_step0.py
-	cp ${Main_Dir}/crab3.py  ${crabFileStep0}
-	sed -i 's/NAME/'"${Name}"'/' ${crabFileStep0}
-	sed -i 's/test/'"${step0PythonFile}"'/' ${crabFileStep0}
+crabFileStep0=crab3_${Name}_GENSIM_step0.py
+cp ${Main_Dir}/crab3.py  ${crabFileStep0}
+sed -i 's/NAME/'"${Name}"'/' ${crabFileStep0}
+sed -i 's/test/'"${step0PythonFile}"'/' ${crabFileStep0}
 
-	crabFileStep1=crab3_${Name}_RAWSIM_step1_
-	crabFileStep2=crab3_${Name}_AODSIM_step2_
-	crabFileStep3=crab3_${Name}_MiniAOD_step3_
-	for i in ${PU[@]}; do
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep1}${i}'.py'
-		sed -i 's/test/'"${step1PythonFile}${i}"'/' ${crabFileStep1}${i}'.py'
-		sed -i 's/NAME/'"${Name}"'_RAWSIM_v706_'"${i}"'/' ${crabFileStep1}${i}'.py'
-		sed -i 's/PROC/RAWSIM_PHYS14_v720_'"${i}"'/' ${crabFileStep1}${i}'.py'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep1}${i}'.py'
+if [[ ${1} == *'LHE'* ]]; then
+	sed -i 's,/store/user/algomez/RPVSttojj_13TeV/RPVSt200tojj_13TeV.lhe,'"${LHEFile}"',' ${step0PythonFile}
+	unitPerJob=100
 
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep2}${i}'.py'
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep2}${i}'.py'
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep2}${i}'.py'
-		sed -i 's/test/'"${step2PythonFile}${i}"'/' ${crabFileStep2}${i}'.py'
-		sed -i 's/NAME/'"${Name}"'_AODSIM_v706_'"${i}"'/' ${crabFileStep2}${i}'.py'
-		sed -i 's/PROC/AODSIM_PHYS14_v720_'"${i}"'/' ${crabFileStep2}${i}'.py'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep2}${i}'.py'
-
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep3}${i}'.py'
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep3}${i}'.py'
-		cp ${Main_Dir}/crab3_RAW.py  ${crabFileStep3}${i}'.py'
-		sed -i 's/test/'"${step3PythonFile}${i}"'/' ${crabFileStep3}${i}'.py'
-		sed -i 's/NAME/'"${Name}"'_MiniAOD_v706_'"${i}"'/' ${crabFileStep3}${i}'.py'
-		sed -i 's/PROC/MiniAOD_PHYS14_v720_'"${i}"'/' ${crabFileStep3}${i}'.py'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep3}${i}'.py'
-
-	done
-
-	#################################
-	##### To make it run
-	#################################
-	echo 'To make it run: 
-	First load the libraries (only once per session):
-	source /cvmfs/cms.cern.ch/crab3/crab.sh
-	
-	Create and submit your jobs (Example for step0):
-	cd '${Name}'
-	crab submit '${crabFileStep0}' 
-
-	To check the status:
-	crab status '${Name}'_GENSIM
-
-	Once you have the dataset from step0 or step1, for example:
-	sed -i "s/ADD_YOUR_DATASET_HERE/\/RPVSt100tojj_13TeV_pythia8_GENSIM\/algomez-RPVSt100tojj_13TeV_pythia8_GENSIM-62459d50bdc5c4568f334137235e3bfc\/USER/g" crab3*RAWSIM*
-	' >> README
-
-	echo 'This script creates CRAB3 config files by default. Crab3 instructions in the README file'
-	echo 'Have a nice day :D '
-
-else
-	crabFileStep0=crab2_${Name}_GENSIM_step0.cfg
-	cp ${Main_Dir}/crab2.cfg  ${crabFileStep0}
-	sed -i 's/test/'"${step0PythonFile}"'/' ${crabFileStep0}
-	sed -i 's/NAME/'"${Name}"'_GENSIM_v706/' ${crabFileStep0}
-
-	crabFileStep1=crab2_${Name}_RAWSIM_step1_
-	crabFileStep2=crab2_${Name}_AODSIM_step2_
-	crabFileStep3=crab2_${Name}_MiniAOD_step3_
-	for i in ${PU[@]}; do
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep1}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep1}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep1}${i}'.cfg'
-		sed -i 's/test/'"${step1PythonFile}${i}"'/' ${crabFileStep1}${i}'.cfg'
-		sed -i 's/NAME/'"${Name}"'_RAWSIM_v706_'"${i}"'/' ${crabFileStep1}${i}'.cfg'
-	#	sed -i 's/remoteGlidein/condor/' ${crabFileStep1}${i}'.cfg'
-		sed -i 's/^#//' ${crabFileStep1}${i}'.cfg'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep1}${i}'.cfg'
-		sed -i 's/generator = lhe/dbs_url = phys03/' ${crabFileStep1}${i}'.cfg'
-
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep2}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep2}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep2}${i}'.cfg'
-		sed -i 's/test/'"${step2PythonFile}${i}"'/' ${crabFileStep2}${i}'.cfg'
-		sed -i 's/NAME/'"${Name}"'_AODSIM_v706_'"${i}"'/' ${crabFileStep2}${i}'.cfg'
-	#	sed -i 's/remoteGlidein/condor/' ${crabFileStep2}${i}'.cfg'
-		sed -i 's/^#//' ${crabFileStep2}${i}'.cfg'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep2}${i}'.cfg'
-		sed -i 's/generator = lhe/dbs_url = phys03/' ${crabFileStep2}${i}'.cfg'
-
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep3}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep3}${i}'.cfg'
-		cp ${Main_Dir}/crab2.cfg  ${crabFileStep3}${i}'.cfg'
-		sed -i 's/test/'"${step3PythonFile}${i}"'/' ${crabFileStep3}${i}'.cfg'
-		sed -i 's/NAME/'"${Name}"'_MiniAOD_v706_'"${i}"'/' ${crabFileStep3}${i}'.cfg'
-		sed -i 's/^#//' ${crabFileStep3}${i}'.cfg'
-		sed -i 's/None/ADD_YOUR_DATASET_HERE/' ${crabFileStep3}${i}'.cfg'
-		sed -i 's/generator = lhe/dbs_url = phys03/' ${crabFileStep3}${i}'.cfg'
-	done
-
-	#################################
-	##### To make it run
-	#################################
-	echo ' To make it run: 
-	First load the libraries (only once per session):
-	source /uscmst1/prod/grid/gLite_SL5.sh
-	source /uscmst1/prod/grid/CRAB/crab.sh
-
-	Create and submit your jobs (Example for step0):
-	cd '${Name}'
-	crab -create -cfg '${crabFileStep0}' 
-	crab -submit NUMBER_JOBS -cfg '${crabFileStep0}' 
-
-	To check the status:
-	crab -status -c '${Name}'_GENSIM
-
-	To resubmit failed jobs:
-	crab -resubmit LIST_OF_FAILED_JOBS  -c '${Name}'_GENSIM 
-
-	When your jobs are done:
-	crab -report -c '${Name}'_GENSIM
-
-	To publish:
-	crab -publish -c '${Name}'_GENSIM
-
-	Once you have the dataset from step0 or step1, for example:
-	sed -i "s/ADD_YOUR_DATASET_HERE/\/RPVSt100tojj_13TeV_pythia8_GENSIM\/algomez-RPVSt100tojj_13TeV_pythia8_GENSIM-62459d50bdc5c4568f334137235e3bfc\/USER/g" crab2*RAWSIM*
-	' >> README
-
-	echo 'Crab instructions in the README file'
-	echo 'Have a nice day :D '
+elif [[ ${1} == *'gridpack'* ]]; then
+	sed -i 's/HadRPVStop180_UDD323_13TeV_tarball/HadRPVStop'"${stop1}"'_'"${coupling}"'_13TeV_tarball/' ${step0PythonFile}
+	unitPerJob=2000
 fi
+
+sed -i 's/NJOBS = 1000/NJOBS = '"$((${totalNumberEvents} / ${unitPerJob}))"'/' ${crabFileStep0}
+sed -i 's/unitsPerJob = 2000/unitsPerJob = '"${unitPerJob}"'/' ${crabFileStep0}
+
+
+#################################
+##### To make it run
+#################################
+echo ' To make it run: 
+First load the libraries (only once per session):
+source /uscmst1/prod/grid/gLite_SL5.sh
+source /uscmst1/prod/grid/CRAB/crab.sh
+
+Create and submit your jobs (Example for step0):
+cd '${Name}'
+crab -create -cfg '${crabFileStep0}' 
+crab -submit NUMBER_JOBS -cfg '${crabFileStep0}' 
+
+To check the status:
+crab -status -c '${Name}'_GENSIM
+
+To resubmit failed jobs:
+crab -resubmit LIST_OF_FAILED_JOBS  -c '${Name}'_GENSIM 
+
+When your jobs are done:
+crab -report -c '${Name}'_GENSIM
+
+' >> README
+
+echo 'Crab instructions in the README file'
+echo 'Have a nice day :D '
+
 user=`echo $USER`
 sed -i 's/algomez/'"${user}"'/g' *.py
 
