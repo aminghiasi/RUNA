@@ -21,9 +21,9 @@
 ### PARAMETERS
 #####################################
 
-stop1=100	## You can use this parameters later to make everything simpler. 
+stop1=${2}	## You can use this parameters later to make everything simpler. 
 coupling=UDD323
-totalNumberEvents=100000
+totalNumberEvents=${3}
 
 Name=RPVStopStopToJets_${coupling}_M-${stop1}_TuneCUETP8M1_13TeV-madgraph-pythia8       ##### UDD312 is for stop to jj, UDD323 for stop to bj
 
@@ -74,6 +74,10 @@ if [[ ${1} == *'LHE'* ]]; then
 elif [[ ${1} == *'gridpack'* ]]; then
 	sed -i 's/HadRPVStop180_UDD323_13TeV_tarball/HadRPVStop'"${stop1}"'_'"${coupling}"'_13TeV_tarball/' ${step0PythonFile}
 	unitPerJob=2000
+	dummy=280
+	if [ "$stop1" -gt 280 ]; then
+		sed -i 's/process.generator+process.htFilter/process.generator/' ${step0PythonFile}
+	fi
 fi
 
 sed -i 's/NJOBS = 1000/NJOBS = '"$((${totalNumberEvents} / ${unitPerJob}))"'/' ${crabFileStep0}
