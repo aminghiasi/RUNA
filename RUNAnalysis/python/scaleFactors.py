@@ -239,7 +239,7 @@ dictEvents = {
 
 def search(DICT, searchFor):
 	for k in DICT:
-		if k in searchFor:
+		if searchFor == k:
 			return DICT[k]
 	return None
 

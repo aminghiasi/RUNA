@@ -190,6 +190,7 @@ if __name__ == '__main__':
 		config.Data.inputDataset = dataset
 		config.Data.unitsPerJob = processingSamples[sam][1]
 		if 'JetHT' in dataset: 
+
 			procName = dataset.split('/')[1]+dataset.split('/')[2].replace( dataset.split('/')[2].split('-')[0], '').split('_')[0]+processingSamples[sam][3]+'_'+args.version
 			config.Data.lumiMask = '/afs/cern.ch/work/a/algomez/RPVStops/CMSSW_8_0_20/src/RUNA/RUNAnalysis/test/supportFiles/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON'+processingSamples[sam][3]+'.txt'
 			config.JobType.pyCfgParams = [ 'PROC='+procName, 'jecVersion='+jecVersion ] 
@@ -199,7 +200,7 @@ if __name__ == '__main__':
 			config.JobType.pyCfgParams = ( [ 'PROC='+procName, 'systematics='+('1' if 'RPV' in sam else '0'), 'jecVersion='+jecVersion ] )
 
 		config.JobType.inputFiles =  supportFiles
-		config.General.requestName = procName
+		config.General.requestName = procName+'_'+args.version
 		print config
 		print '|--- Submmiting sample: ', procName
 		p = Process(target=submit, args=(config,))
